@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -11,7 +12,7 @@ namespace DummyTestsCore
         [TestMethod]
         public void Rename()
         {
-            string path = @"\\WDEX4100\Public\Snimki\Planini\Rila\Rila-E4 2017.07.22-08.02";
+            string path = @"\\WDEX4100\Public\Snimki\Planini\Rila\Rila 2018.11.17";
 
             var dir = new DirectoryInfo(path);
             var files = dir.GetFiles("*103_*");
@@ -19,6 +20,18 @@ namespace DummyTestsCore
             {
                 File.Move(file.FullName, file.FullName.Replace("103_", "100_"));
             }
+        }
+
+        [TestMethod]
+        public void FingMissingPhoto()
+        {
+            var dir1 = new DirectoryInfo(@"D:\Output\E4 Google Photo");
+            var files1 = dir1.GetFiles("*.jpg").Select(f => f.Name);
+
+            var dir2 = new DirectoryInfo(@"D:\Junk\E4 2017");
+            var files2 = dir2.GetFiles("*.jpg").Select(f => f.Name);
+
+            var missingPhoto = files1.Except(files2);
         }
 
         [TestMethod]
@@ -59,13 +72,13 @@ namespace DummyTestsCore
         [TestMethod]
         public void SeparateFiles()
         {
-            var extension = ".FLV";
-            //var extension = ".mp4";
             var path = @"D:\Downloads";
-            var root = new DirectoryInfo(path);
-            var files = root.GetFiles().Where(f => f.Extension == extension).ToList();
-
             var destination = @"\\WDEX4100\Personal\Downloads1";
+
+            var extensions = new HashSet<string>() { ".flv", ".mp4" };
+
+            var root = new DirectoryInfo(path);
+            var files = root.GetFiles().Where(f => extensions.Contains(f.Extension, StringComparer.OrdinalIgnoreCase)).ToList();
 
             foreach (var file in files)
             {
@@ -87,7 +100,7 @@ namespace DummyTestsCore
 
                     fileSufix++;
 
-                    string newFilePath = Path.Combine(folderName, $"{username}_{fileSufix}{extension}");
+                    string newFilePath = Path.Combine(folderName, $"{username}_{fileSufix}{file.Extension}");
                     File.Move(file.FullName, newFilePath);
                 }
             }

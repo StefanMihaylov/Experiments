@@ -5,7 +5,7 @@ namespace DataStructures.Tests
     [TestClass]
     public class PriorityQueueTests
     {
-        [TestMethod]
+        //[TestMethod]
         public void TestMethod1()
         {
         }

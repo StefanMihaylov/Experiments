@@ -61,12 +61,14 @@ namespace DataStructures
 
         public T FindMin()
         {
-            return FindExtremeValue(0, GetLeftChildIndex);
+            int nodeIndex = FindExtremeValueIndex(0, GetLeftChildIndex);
+            return this.storage[nodeIndex].Value;
         }
 
         public T FindMax()
         {
-            return FindExtremeValue(0, GetRightChildIndex);
+            int nodeIndex = FindExtremeValueIndex(0, GetRightChildIndex);
+            return this.storage[nodeIndex].Value;
         }
 
         public T Search(T value)
@@ -142,7 +144,7 @@ namespace DataStructures
 
         public bool Remove(T item)
         {
-            throw new NotImplementedException();
+            return Remove(item, 0);
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -156,14 +158,6 @@ namespace DataStructures
         IEnumerator IEnumerable.GetEnumerator()
         {
             return this.GetEnumerator();
-        }
-
-        public T this[int index]
-        {
-            get
-            {
-                return this.storage[index].Value;
-            }
         }
 
         #endregion
@@ -227,60 +221,185 @@ namespace DataStructures
             }
         }
 
+        private bool Remove(T value, int nodeIndex)
+        {
+            Node<T> currentNode = this.storage.ElementAtOrDefault(nodeIndex);
+            if (currentNode == null)
+            {
+                return false;
+            }
+
+            int compareResult = this.compare(value, currentNode.Value);
+            if (compareResult < 0)
+            {
+                return Remove(value, GetLeftChildIndex(nodeIndex));
+            }
+            else if (compareResult > 0)
+            {
+                return Remove(value, GetRightChildIndex(nodeIndex));
+            }
+            else
+            {
+                int leftIndex = this.GetLeftChildIndex(nodeIndex);
+                int rightIndex = this.GetRightChildIndex(nodeIndex);
+                Node<T> left = this.storage.ElementAtOrDefault(leftIndex);
+                Node<T> right = this.storage.ElementAtOrDefault(rightIndex);
+
+                if (left == null && right == null)
+                {
+                    this.storage[nodeIndex] = null;
+
+                    int parentIndex = this.GetParentIndex(nodeIndex);
+                    DeleteBalance(parentIndex, -GetParentBalance(nodeIndex));
+                }
+                else if (left == null && right != null)
+                {
+                    Node<T>[] rightSubTree = new Node<T>[INITIAL_CAPACITY / 2];
+                    GetSubTree(rightIndex, rightSubTree, 0);
+                    AddSubTree(nodeIndex, rightSubTree, 0);
+
+                    DeleteBalance(nodeIndex, 0);
+                }
+                else if (left != null && right == null)
+                {
+                    Node<T>[] leftSubTree = new Node<T>[INITIAL_CAPACITY / 2];
+                    GetSubTree(leftIndex, leftSubTree, 0);
+                    AddSubTree(nodeIndex, leftSubTree, 0);
+
+                    DeleteBalance(nodeIndex, 0);
+                }
+                else // left != null && right != null
+                {
+                    int successorIndex = FindExtremeValueIndex(rightIndex, GetLeftChildIndex);
+                    this.storage[successorIndex].Balance = this.storage[nodeIndex].Balance;
+                    this.storage[nodeIndex] = this.storage[successorIndex];
+                    this.storage[successorIndex] = null;
+
+                    int successorParentIndex = this.GetParentIndex(successorIndex);
+                    int successotRightIndex = this.GetRightChildIndex(successorIndex);
+                    Node<T>[] rightSubTree = new Node<T>[INITIAL_CAPACITY / 2];
+                    GetSubTree(successotRightIndex, rightSubTree, 0);
+                    AddSubTree(successorIndex, rightSubTree, 0);
+
+                    if (successorIndex == rightIndex)
+                    {
+                        DeleteBalance(nodeIndex, 1);
+                    }
+                    else
+                    {
+                        DeleteBalance(successorParentIndex, -1);
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        private void DeleteBalance(int nodeIndex, int balance)
+        {
+            while (nodeIndex >= 0)
+            {
+                Node<T> node = this.storage.ElementAtOrDefault(nodeIndex);
+
+                int currentBalance = node.Balance + balance;
+                node.Balance = currentBalance;
+
+                if (currentBalance == 2)
+                {
+                    int leftIndex = this.GetLeftChildIndex(nodeIndex);
+                    if (this.storage[leftIndex].Balance >= 0)
+                    {
+                        // RotateRight
+                        RotateSingle(nodeIndex, GetLeftChildIndex, GetRightChildIndex, -1);
+                    }
+                    else
+                    {
+                        // RotateLeftRight
+                        RotateDouble(nodeIndex, GetLeftChildIndex, GetRightChildIndex, -1);
+                    }
+                }
+                else if (currentBalance == -2)
+                {
+                    int rightIndex = this.GetRightChildIndex(nodeIndex);
+                    if (this.storage[rightIndex].Balance <= 0)
+                    {
+                        // RotateLeft
+                        RotateSingle(nodeIndex, GetRightChildIndex, GetLeftChildIndex, +1);
+                    }
+                    else
+                    {
+                        // RotateRightLeft
+                        RotateDouble(nodeIndex, GetRightChildIndex, GetLeftChildIndex, +1);
+                    }
+                }
+                else if (currentBalance != 0)
+                {
+                    return;
+                }
+
+                int parentIndex = GetParentIndex(nodeIndex);
+                if (parentIndex >= 0)
+                {
+                    balance = -GetParentBalance(nodeIndex);
+                }
+
+                nodeIndex = parentIndex;
+            }
+        }
+
         private void Balance(int nodeIndex, int balance)
         {
-            if (nodeIndex < 0)
+            while (nodeIndex >= 0)
             {
-                return;
-            }
+                int currentBalance = this.storage[nodeIndex].Balance + balance;
+                this.storage[nodeIndex].Balance = currentBalance;
 
-            int currentBalance = this.storage[nodeIndex].Balance + balance;
-            this.storage[nodeIndex].Balance = currentBalance;
-
-            if (currentBalance == 0)
-            {
-                return;
-            }
-            else if (currentBalance == 2)
-            {
-                int leftChildIndex = GetLeftChildIndex(nodeIndex);
-                if (this.storage[leftChildIndex].Balance == 1)
+                if (currentBalance == 0)
                 {
-                    // RotateRight
-                    RotateSingle(nodeIndex, GetLeftChildIndex, GetRightChildIndex, -1);
+                    return;
                 }
-                else
+                else if (currentBalance == 2)
                 {
-                    // RotateLeftRight
-                    RotateDouble(nodeIndex, GetLeftChildIndex, GetRightChildIndex, -1);
-                }
+                    int leftChildIndex = GetLeftChildIndex(nodeIndex);
+                    if (this.storage[leftChildIndex].Balance == 1)
+                    {
+                        // RotateRight
+                        RotateSingle(nodeIndex, GetLeftChildIndex, GetRightChildIndex, -1);
+                    }
+                    else
+                    {
+                        // RotateLeftRight
+                        RotateDouble(nodeIndex, GetLeftChildIndex, GetRightChildIndex, -1);
+                    }
 
-                return;
-            }
-            else if (currentBalance == -2)
-            {
-                int rightChildIndex = GetRightChildIndex(nodeIndex);
-                if (this.storage[rightChildIndex].Balance == -1)
+                    return;
+                }
+                else if (currentBalance == -2)
                 {
-                    // RotateLeft
-                    RotateSingle(nodeIndex, GetRightChildIndex, GetLeftChildIndex, +1);
+                    int rightChildIndex = GetRightChildIndex(nodeIndex);
+                    if (this.storage[rightChildIndex].Balance == -1)
+                    {
+                        // RotateLeft
+                        RotateSingle(nodeIndex, GetRightChildIndex, GetLeftChildIndex, +1);
+                    }
+                    else
+                    {
+                        // RotateRightLeft
+                        RotateDouble(nodeIndex, GetRightChildIndex, GetLeftChildIndex, +1);
+                    }
+
+                    return;
                 }
-                else
+
+                int parentIndex = GetParentIndex(nodeIndex);
+                if (parentIndex >= 0)
                 {
-                    // RotateRightLeft
-                    RotateDouble(nodeIndex, GetRightChildIndex, GetLeftChildIndex, +1);
+                    balance = GetParentBalance(nodeIndex);
                 }
 
-                return;
-            }
+                nodeIndex = parentIndex;
 
-            int parentIndex = GetParentIndex(nodeIndex);
-            if (parentIndex >= 0)
-            {
-                balance = (nodeIndex % 2 == 1) ? 1 : -1;
             }
-
-            Balance(parentIndex, balance);
         }
 
         private void RotateSingle(int nodeIndex, Func<int, int> getChildIndex, Func<int, int> getSubTreeIndex, int balanceCorrection)
@@ -371,7 +490,7 @@ namespace DataStructures
 
             leftRight.Balance = 0;
         }
-        
+
         private void AddSubTree(int nodeIndex, Node<T>[] subTree, int subTreeIndex)
         {
             if (nodeIndex >= this.storage.Length)
@@ -430,7 +549,7 @@ namespace DataStructures
             GetSubTree(rigtIndex, subTree, subTreeRigtIndex);
         }
 
-        private T FindExtremeValue(int nodeIndex, Func<int, int> getChildIndex)
+        private int FindExtremeValueIndex(int nodeIndex, Func<int, int> getChildIndex)
         {
             Node<T> current = this.storage.ElementAtOrDefault(nodeIndex);
             int childIndex = getChildIndex(nodeIndex);
@@ -438,26 +557,27 @@ namespace DataStructures
 
             if (current != null && child == null)
             {
-                return current.Value;
+                return nodeIndex;
             }
 
-            return FindExtremeValue(childIndex, getChildIndex);
+            return FindExtremeValueIndex(childIndex, getChildIndex);
         }
 
         private void DoubleArraySize<P>(ref P[] array)
         {
             P[] cachedArray = array;
             array = new P[2 * cachedArray.Length];
-
-            for (int i = 0; i < cachedArray.Length; i++)
-            {
-                array[i] = cachedArray[i];
-            }
+            Array.Copy(cachedArray, array, cachedArray.Length);
         }
 
         private int GetParentIndex(int nodeIndex)
         {
             return (int)Math.Floor((double)(nodeIndex - 1) / 2);
+        }
+
+        private int GetParentBalance(int nodeIndex)
+        {
+            return (nodeIndex % 2 == 0) ? -1 : +1;
         }
 
         private int GetLeftChildIndex(int nodeIndex)
