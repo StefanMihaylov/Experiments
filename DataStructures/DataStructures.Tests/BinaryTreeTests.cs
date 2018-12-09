@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -307,7 +308,7 @@ namespace DataStructures.Tests
         [TestMethod]
         public void Add_Rotation_RightParentedRightRight_Test()
         {
-            var tree = new BinaryTree<int>(new [] { 2, 1, 4, 8 });
+            var tree = new BinaryTree<int>(new[] { 2, 1, 4, 8 });
 
             Assert.AreEqual("2-:{1,4-:{~,8}}", tree.ToString());
 
@@ -575,6 +576,136 @@ namespace DataStructures.Tests
 
             Assert.AreEqual("30+:{20-:{10,25+:{24,~}},35-:{~,36}}", tree.ToString());
             Assert.IsTrue(isDeleted);
+        }
+
+        [TestMethod]
+        public void Add_05_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 5; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("2-:{1,4:{3,5}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_10_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 10; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("4-:{2:{1,3},8:{6:{5,7},9-:{~,10}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_15_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 15; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("8:{4:{2:{1,3},6:{5,7}},12:{10:{9,11},14:{13,15}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_20_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 20; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("8-:{4:{2:{1,3},6:{5,7}},16:{12:{10:{9,11},14:{13,15}},18-:{17,19-:{~,20}}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_23_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 23; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("8-:{4:{2:{1,3},6:{5,7}},16:{12:{10:{9,11},14:{13,15}},20:{18:{17,19},22:{21,23}}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_24_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 24; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("16:{8:{4:{2:{1,3},6:{5,7}},12:{10:{9,11},14:{13,15}}},20-:{18:{17,19},22-:{21,23-:{~,24}}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_25_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 25; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("16:{8:{4:{2:{1,3},6:{5,7}},12:{10:{9,11},14:{13,15}}},20-:{18:{17,19},22-:{21,24:{23,25}}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Add_30_Elements_Test()
+        {
+            var tree = new BinaryTree<int>();
+            for (int i = 1; i <= 30; i++)
+            {
+                tree.Add(i);
+            }
+
+            Assert.AreEqual("16:{8:{4:{2:{1,3},6:{5,7}},12:{10:{9,11},14:{13,15}}},24:{20:{18:{17,19},22:{21,23}},28:{26:{25,27},29-:{~,30}}}}", tree.ToString());
+        }
+
+        [TestMethod]
+        public void Insertion_Forth_Test()
+        {
+            var stopWatch = new Stopwatch();
+
+            var tree = new BinaryTree<int>();
+            stopWatch.Start();
+
+            for (int i = 1; i <= 10000; i++)
+            {
+                tree.Add(i);
+            }
+
+            stopWatch.Stop();
+            TimeSpan elapsed = stopWatch.Elapsed;
+        }
+
+        [TestMethod]
+        public void Insertion_Back_Test()
+        {
+            var stopWatch = new Stopwatch();
+
+            var tree = new BinaryTree<int>();
+            stopWatch.Start();
+
+            for (int i = 10000; i >= 1; i--)
+            {
+                tree.Add(i);
+            }
+
+            stopWatch.Stop();
+            TimeSpan elapsed = stopWatch.Elapsed;
         }
     }
 }

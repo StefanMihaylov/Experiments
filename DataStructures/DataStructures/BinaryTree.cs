@@ -255,7 +255,7 @@ namespace DataStructures
                 else if (left == null && right != null)
                 {
                     Node<T>[] rightSubTree = new Node<T>[INITIAL_CAPACITY / 2];
-                    GetSubTree(rightIndex, rightSubTree, 0);
+                    GetSubTree(rightIndex, ref rightSubTree, 0);
                     AddSubTree(nodeIndex, rightSubTree, 0);
 
                     DeleteBalance(nodeIndex, 0);
@@ -263,7 +263,7 @@ namespace DataStructures
                 else if (left != null && right == null)
                 {
                     Node<T>[] leftSubTree = new Node<T>[INITIAL_CAPACITY / 2];
-                    GetSubTree(leftIndex, leftSubTree, 0);
+                    GetSubTree(leftIndex, ref leftSubTree, 0);
                     AddSubTree(nodeIndex, leftSubTree, 0);
 
                     DeleteBalance(nodeIndex, 0);
@@ -278,7 +278,7 @@ namespace DataStructures
                     int successorParentIndex = this.GetParentIndex(successorIndex);
                     int successotRightIndex = this.GetRightChildIndex(successorIndex);
                     Node<T>[] rightSubTree = new Node<T>[INITIAL_CAPACITY / 2];
-                    GetSubTree(successotRightIndex, rightSubTree, 0);
+                    GetSubTree(successotRightIndex, ref rightSubTree, 0);
                     AddSubTree(successorIndex, rightSubTree, 0);
 
                     if (successorIndex == rightIndex)
@@ -411,15 +411,15 @@ namespace DataStructures
 
             int subTreeIndex = getSubTreeIndex(nodeIndex);
             Node<T>[] subTree = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(subTreeIndex, subTree, 0);
+            GetSubTree(subTreeIndex, ref subTree, 0);
 
             int childLeftIndex = getChildIndex(childIndex);
             Node<T>[] childLeft = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(childLeftIndex, childLeft, 0);
+            GetSubTree(childLeftIndex, ref childLeft, 0);
 
             int childRightIndex = getSubTreeIndex(childIndex);
             Node<T>[] childRight = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(childRightIndex, childRight, 0);
+            GetSubTree(childRightIndex, ref childRight, 0);
 
             this.storage[nodeIndex] = child;
             AddSubTree(childIndex, childLeft, 0);
@@ -444,22 +444,22 @@ namespace DataStructures
 
             int rightIndex = getSubTreeIndex(nodeIndex);
             Node<T>[] right = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(rightIndex, right, 0);
+            GetSubTree(rightIndex, ref right, 0);
 
             int leftLeftIndex = getChildIndex(leftIndex);
             Node<T>[] leftLeft = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(leftLeftIndex, leftLeft, 0);
+            GetSubTree(leftLeftIndex, ref leftLeft, 0);
 
             int leftRightIndex = getSubTreeIndex(leftIndex);
             Node<T> leftRight = this.storage[leftRightIndex];
 
             int leftRightLeftIndex = getChildIndex(leftRightIndex);
             Node<T>[] leftRightLeft = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(leftRightLeftIndex, leftRightLeft, 0);
+            GetSubTree(leftRightLeftIndex, ref leftRightLeft, 0);
 
             int leftRightRightIndex = getSubTreeIndex(leftRightIndex);
             Node<T>[] leftRightRight = new Node<T>[INITIAL_CAPACITY / 2];
-            GetSubTree(leftRightRightIndex, leftRightRight, 0);
+            GetSubTree(leftRightRightIndex, ref leftRightRight, 0);
 
             int rightLeftIndex = getChildIndex(rightIndex);
             int rightRightIndex = getSubTreeIndex(rightIndex);
@@ -517,7 +517,7 @@ namespace DataStructures
             AddSubTree(rigtIndex, subTree, subTreeRigtIndex);
         }
 
-        private void GetSubTree(int nodeIndex, Node<T>[] subTree, int subTreeIndex)
+        private void GetSubTree(int nodeIndex, ref Node<T>[] subTree, int subTreeIndex)
         {
             if (subTreeIndex >= subTree.Length)
             {
@@ -545,8 +545,8 @@ namespace DataStructures
             int subTreeLeftIndex = GetLeftChildIndex(subTreeIndex);
             int subTreeRigtIndex = GetRightChildIndex(subTreeIndex);
 
-            GetSubTree(leftIndex, subTree, subTreeLeftIndex);
-            GetSubTree(rigtIndex, subTree, subTreeRigtIndex);
+            GetSubTree(leftIndex, ref subTree, subTreeLeftIndex);
+            GetSubTree(rigtIndex, ref subTree, subTreeRigtIndex);
         }
 
         private int FindExtremeValueIndex(int nodeIndex, Func<int, int> getChildIndex)
@@ -640,9 +640,9 @@ namespace DataStructures
             }
         }
 
-        private class Node<T>
+        private class Node<N>
         {
-            public T Value { get; set; }
+            public N Value { get; set; }
 
             public int Balance { get; set; }
 
